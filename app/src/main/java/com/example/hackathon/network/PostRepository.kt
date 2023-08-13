@@ -3,6 +3,7 @@ package com.example.hackathon.network
 import com.example.hackathon.BuildConfig
 import com.example.hackathon.network.data.AuthRequest
 import com.example.hackathon.network.data.Post
+import com.example.hackathon.network.data.PostEditRequest
 import com.example.hackathon.network.data.PostRequest
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -86,10 +87,9 @@ object PostRepository {
             }
             headers{
                 headers.append("Authorization", "Bearer ${BuildConfig.SUPERBASE_KEY}")
+                headers.append("Prefer", "return=representation")
             }
-            setBody(PostRequest(title, content))
+            setBody(PostEditRequest(title, content))
         }
     }
-
-
 }

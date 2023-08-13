@@ -19,7 +19,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,23 +36,20 @@ import com.example.hackathon.components.AddPostButton
 import com.example.hackathon.components.DialogAction
 import com.example.hackathon.components.SimpleDialog
 import com.example.hackathon.network.data.Post
-import com.example.hackathon.routes.AuthRouteAction
 import com.example.hackathon.routes.MainRoute
-import com.example.hackathon.routes.MainRouteAction
 import com.example.hackathon.viewmodel.AuthViewModel
 import com.example.hackathon.viewmodel.HomeViewModel
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(
-    homeViewModel: HomeViewModel,
-    authViewMdoel: AuthViewModel,
-    routeAction: MainRouteAction
+fun MainPage(
+    homeViewModel : HomeViewModel,
+    authViewMdoel : AuthViewModel,
 ) {
+
     val isRefreshing by homeViewModel.isRefreshing.collectAsState()
 
     val isLoading by homeViewModel.isLoadingFlow.collectAsState() // 로딩중인지
@@ -67,15 +63,6 @@ fun HomeScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val posts = homeViewModel.postsFlow.collectAsState(emptyList())
-
-    //val currentUserId = authViewMdoel.currentUserIdFlow.collectAsState() // 내가 작성한 글만 삭제 해주기 위해
-
-    LaunchedEffect(key1 = Unit, block = {
-        homeViewModel.dataUpdateFlow.collectLatest {
-            selectedPostIdForDelete = null
-            postsListScrollState.animateScrollToItem(posts.value.size)
-        }
-    } )
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -91,31 +78,25 @@ fun HomeScreen(
                 contentPadding = PaddingValues(20.dp), // 리스트 패딩
                 reverseLayout = true // 아이템 순서를 거꾸로
             ) {
-                items(posts.value){ aPost ->
-                    PostItemView(aPost,
+                items(posts.value) { aPost ->
+                    PostItemView2(aPost,
                         coroutineScope,
                         homeViewModel,
                         authViewMdoel,
                         onDeletePostClicke = {
-                        selectedPostIdForDelete = aPost.id.toString()
-                    })
+                            selectedPostIdForDelete = aPost.id.toString()
+                        })
                 }
+            }
+            TextButton(onClick = { /*TODO*/ }) {
+                Text(text = "등록하러가기")
+            }
+            TextButton(onClick = { /*TODO*/ }) {
+                Text(text = "판매기록보러가기")
             }
         }
 
-        AddPostButton(
-            modifier = Modifier
-                .padding(20.dp)
-                .align(Alignment.BottomEnd) // 오른쪽 아래에 위치 박스에서는 가능
-                ,
-            onClick ={
-                coroutineScope.launch {
-                    homeViewModel.navAction.emit(MainRoute.AddPost)
-                }
-            }
-        )
-
-        if(isLoading){
+        if (isLoading) {
             CircularProgressIndicator(
                 color = Color.White,
                 modifier = Modifier
@@ -124,13 +105,13 @@ fun HomeScreen(
             )
         }
 
-        if(isDialogShown){
+        if (isDialogShown) {
             SimpleDialog(isLoading, onDialogAction = {
-                when(it) {
+                when (it) {
                     DialogAction.CLOSE -> selectedPostIdForDelete = null
                     DialogAction.ACTION -> {
                         println("아이템 삭제해야함 $selectedPostIdForDelete")
-                        selectedPostIdForDelete?.let{ postId ->
+                        selectedPostIdForDelete?.let { postId ->
                             homeViewModel.deletePostItem(postId)
                         }
                     }
@@ -143,7 +124,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun PostItemView(
+fun PostItemView2(
     data: Post,
     coroutineScope: CoroutineScope,
     homeViewModel: HomeViewModel,
@@ -190,12 +171,14 @@ fun PostItemView(
                     }
                 }
             }
+
             Text(
                 text = "${data.title}",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(16.dp)
             )
+
             Text(
                 text = "${data.content}",
                 maxLines = 5,
@@ -206,4 +189,3 @@ fun PostItemView(
         }
     }
 }
-

@@ -53,6 +53,12 @@ class HomeViewModel: ViewModel() {
         }
     }
 
+    fun deletePostItem(postId : String) {
+        viewModelScope.launch {
+            callDeletePostItem(postId)
+        }
+    }
+
     private suspend fun callFetchPosts(){ // suspend fun를 사용하는 이유는 비동기로 동작하기 때문에 suspend fun을 사용해야 한다. Flow를 전달할려면 suspend fun 사용
         withContext(Dispatchers.IO){
             kotlin.runCatching {
@@ -70,4 +76,19 @@ class HomeViewModel: ViewModel() {
         }
     }
 
+    private suspend fun callDeletePostItem(PostId: String){ // suspend fun를 사용하는 이유는 비동기로 동작하기 때문에 suspend fun을 사용해야 한다. Flow를 전달할려면 suspend fun 사용
+        withContext(Dispatchers.IO){
+            kotlin.runCatching {
+                PostRepository.deletePostItem(PostId)
+            }.onSuccess {
+                if (it.status.value == 204) {
+                    refreshData()
+                }
+                isLoadingFlow.emit(false)
+            }.onFailure {
+                Log.d(TAG, " 실패 - onFailure error: ${it.localizedMessage}")
+                isLoadingFlow.emit(false)
+            }
+        }
+    }
 }

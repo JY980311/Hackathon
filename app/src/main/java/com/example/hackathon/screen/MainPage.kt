@@ -1,5 +1,11 @@
 package com.example.hackathon.screen
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,10 +16,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,14 +41,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.example.hackathon.components.AddPostButton
 import com.example.hackathon.components.DialogAction
 import com.example.hackathon.components.SimpleDialog
 import com.example.hackathon.network.data.Post
 import com.example.hackathon.routes.MainRoute
+import com.example.hackathon.routes.MainRouteAction
+import com.example.hackathon.ui.theme.HackathonTheme
 import com.example.hackathon.viewmodel.AuthViewModel
 import com.example.hackathon.viewmodel.HomeViewModel
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -44,148 +64,56 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalCoilApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun MainPage(
-    homeViewModel : HomeViewModel,
-    authViewMdoel : AuthViewModel,
-) {
+fun MainPage() {
 
-    val isRefreshing by homeViewModel.isRefreshing.collectAsState()
-
-    val isLoading by homeViewModel.isLoadingFlow.collectAsState() // 로딩중인지
-
-    val postsListScrollState = rememberLazyListState()
-
-    var selectedPostIdForDelete: String? by remember { mutableStateOf(null) }
-
-    val isDialogShown = !selectedPostIdForDelete.isNullOrBlank() // 값이 있으면 다이얼로그 보여주기 없으면 안보여주기
-
+    var selectImages by remember { mutableStateOf(listOf<Uri>()) }
+    //화면 전환 시에도 사진을 유지하기 위해 rememberCoroutineScope 사용
     val coroutineScope = rememberCoroutineScope()
+    val galleryLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
+            selectImages = it
+        }
 
-    val posts = homeViewModel.postsFlow.collectAsState(emptyList())
-
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.TopCenter
+    Column(
+        Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        SwipeRefresh(
-            state = rememberSwipeRefreshState(isRefreshing),
-            onRefresh = { homeViewModel.refreshData() },
+        Button(
+            onClick = {
+                coroutineScope.launch {
+                galleryLauncher.launch("image/*")
+                      }}
+            ,
+            modifier = Modifier
+                .wrapContentSize()
+                .padding(10.dp)
         ) {
-            LazyColumn(
-                state = postsListScrollState,
-                verticalArrangement = Arrangement.spacedBy(20.dp), // 아이템 간격
-                contentPadding = PaddingValues(20.dp), // 리스트 패딩
-                reverseLayout = true // 아이템 순서를 거꾸로
-            ) {
-                items(posts.value) { aPost ->
-                    PostItemView2(aPost,
-                        coroutineScope,
-                        homeViewModel,
-                        authViewMdoel,
-                        onDeletePostClicke = {
-                            selectedPostIdForDelete = aPost.id.toString()
-                        })
-                }
-            }
-            TextButton(onClick = { /*TODO*/ }) {
-                Text(text = "등록하러가기")
-            }
-            TextButton(onClick = { /*TODO*/ }) {
-                Text(text = "판매기록보러가기")
-            }
+            Text(text = "Pick Image From Gallery")
         }
 
-        if (isLoading) {
-            CircularProgressIndicator(
-                color = Color.White,
-                modifier = Modifier
-                    .scale(0.7f)
-                    .padding(5.dp)
-            )
-        }
-
-        if (isDialogShown) {
-            SimpleDialog(isLoading, onDialogAction = {
-                when (it) {
-                    DialogAction.CLOSE -> selectedPostIdForDelete = null
-                    DialogAction.ACTION -> {
-                        println("아이템 삭제해야함 $selectedPostIdForDelete")
-                        selectedPostIdForDelete?.let { postId ->
-                            homeViewModel.deletePostItem(postId)
+        LazyVerticalGrid(columns = GridCells.Fixed(3)) {
+            items(selectImages) { uri ->
+                Image(
+                    painter = rememberAsyncImagePainter(uri),
+                    contentScale = ContentScale.FillWidth,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(16.dp, 8.dp)
+                        .size(100.dp)
+                        .clickable {
                         }
-                    }
-
-                    else -> {}
-                }
-            })
+                )
+            }
         }
     }
 }
 
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun PostItemView2(
-    data: Post,
-    coroutineScope: CoroutineScope,
-    homeViewModel: HomeViewModel,
-    authViewMdoel: AuthViewModel,
-    onDeletePostClicke: () -> Unit
-){
-    val currentUserId = authViewMdoel.currentUserIdFlow.collectAsState() // 내가 작성한 글만 삭제 해주기 위해
-
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        shadowElevation = 8.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Max)
-    ) {
-        Column() {
-
-            Text(text = "userId: ${data.userID}")
-
-            Row() {
-                Text(
-                    text = "${data.id}",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .weight(1f)
-                )
-
-                if(currentUserId.value == data.userID.toString()){ // 내가 작성한 글만 삭제 수정 하게 만들기
-                    Row() {
-                        TextButton(onClick = {
-                            onDeletePostClicke()
-                        }) {
-                            Text(text = "삭제")
-                        }
-
-                        TextButton(onClick = {
-                            coroutineScope.launch {
-                                homeViewModel.navAction.emit(MainRoute.EditPost(postId = "${data.id}"))
-                            }}) {
-                            Text(text = "수정")
-                        }
-                    }
-                }
-            }
-
-            Text(
-                text = "${data.title}",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(16.dp)
-            )
-
-            Text(
-                text = "${data.content}",
-                maxLines = 5,
-                modifier = Modifier
-                    .padding(16.dp)
-                    .weight(1f)
-            )
-        }
+fun DefaultPreview() {
+    HackathonTheme() {
+        MainPage()
     }
 }

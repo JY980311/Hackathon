@@ -36,8 +36,8 @@ import androidx.compose.ui.unit.sp
 import com.example.hackathon.components.AddPostButton
 import com.example.hackathon.components.DialogAction
 import com.example.hackathon.components.SimpleDialog
+import com.example.hackathon.network.UserInfo
 import com.example.hackathon.network.data.Post
-import com.example.hackathon.routes.AuthRouteAction
 import com.example.hackathon.routes.MainRoute
 import com.example.hackathon.routes.MainRouteAction
 import com.example.hackathon.viewmodel.AuthViewModel
@@ -49,7 +49,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(
+fun CommunityScreen(
     homeViewModel: HomeViewModel,
     authViewMdoel: AuthViewModel,
     routeAction: MainRouteAction
@@ -161,11 +161,24 @@ fun PostItemView(
     ) {
         Column() {
 
-            Text(text = "userId: ${data.userID}")
+            var userEmail = UserInfo.userEmail.split("@")
+
+            Text(
+                text = "userId: ${userEmail[0]}",
+                modifier = Modifier.padding(16.dp)
+            )
 
             Row() {
+//                Text(
+//                    text = "${data.id}",
+//                    fontSize = 20.sp,
+//                    fontWeight = FontWeight.Bold,
+//                    modifier = Modifier
+//                        .padding(16.dp)
+//                        .weight(1f)
+//                )
                 Text(
-                    text = "${data.id}",
+                    text = "${data.title}",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -190,12 +203,7 @@ fun PostItemView(
                     }
                 }
             }
-            Text(
-                text = "${data.title}",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(16.dp)
-            )
+
             Text(
                 text = "${data.content}",
                 maxLines = 5,

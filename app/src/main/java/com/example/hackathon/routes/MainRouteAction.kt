@@ -31,8 +31,17 @@ sealed class MainRoute(
     val iconResId: Int? = null
 ){
     object Home: MainRoute("HOME", "홈", R.drawable.ic_home)
+    object communitypage: MainRoute("MAIN_PAGE", "커뮤니티", R.drawable.ic_community_icon)
     object Mypage: MainRoute("MY_PAGE", "마이페이지", R.drawable.ic_user)
+    object MyWritePosts: MainRoute("MY_WRITE_POSTS", "내가 쓴 글")
     object AddPost: MainRoute("ADD_POST", "게시글 작성")
+    object Order: MainRoute("ORDER", "주문 화면")
+    object Order2: MainRoute("ORDER2", "주문 화면2")
+    object AddressSearch: MainRoute("ADDRESSSEARCH", "배송지 화면")
+    object SalesRegistration: MainRoute("SALESREGISTRATION", "판매 등록")
+    object CartList: MainRoute("CARTLIST", "담은 장바구니")
+    object MySalesRecord: MainRoute("MYSALESRECORD", "나의 판매 기록")
+    object CheckReview: MainRoute("CHECKREVIEW", "후기 확인")
     class EditPost(val postId:String): MainRoute("EDIT_POST", "게시글 수정")
 
 }

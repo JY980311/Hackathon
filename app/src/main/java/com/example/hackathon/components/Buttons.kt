@@ -2,10 +2,13 @@ package com.example.hackathon.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 
@@ -21,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.size.Size
 import com.example.hackathon.R
 
 enum class ButtonType{
@@ -145,7 +149,8 @@ fun BackButton(
             contentColor = Color.Black, //버튼 안에 있는 글자 색
             containerColor = Color.Transparent //버튼 색
         ),
-        border = BorderStroke(0.dp, Color.Transparent) //버튼 테두리
+        border = BorderStroke(0.dp, Color.Transparent), //버튼 테두리
+        contentPadding = PaddingValues(0.dp) //버튼 안에 있는 글자와 테두리 사이의 간격
     ) {
         Image(
             painter = painterResource(id = R.drawable.ic_backbutton),
@@ -154,6 +159,8 @@ fun BackButton(
                 .size(15.dp)
                 .padding(start = 2.dp)
         )
+        Spacer(modifier = Modifier.width(5.dp))
+
         Text(
             text = "뒤로가기",
             color = Color.Black,

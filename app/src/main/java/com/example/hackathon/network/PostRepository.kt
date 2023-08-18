@@ -33,6 +33,20 @@ object PostRepository {
         }.body<List<Post>>()
     }
 
+    //user_id를 비교해서 모든 포스트 가져오기
+    suspend fun SerchfetchAllPost(userID: String) : List<Post> {
+
+        return KtorClient.httpClient.get(postUrl){
+            url {
+                parameters.append("select", "*") // password를 통해 토큰을 받는다.
+                parameters.append("user_id", "eq.${userID}")
+            }
+            headers{
+                headers.append("Authorization", "Bearer ${BuildConfig.SUPERBASE_KEY}")
+            }
+        }.body<List<Post>>()
+    }
+
     //단일 포스트 가져오기
     suspend fun fetchPostItem(postId: String) : Post { //postId를 받아서 Post를 반환한다. 1개만 반환한다해서 List대신 단일 Post를 사용
 
@@ -48,7 +62,7 @@ object PostRepository {
     }
 
     //포스트 삭제하기
-    suspend fun deletePostItem(postId: String) : HttpResponse { //postId를 받아서 Post를 반환한다. 1개만 반환한다해서 List대신 단일 Post를 사용
+    suspend fun deletePostItem(postId: String) : HttpResponse {
 
         return KtorClient.httpClient.delete(postUrl){
             url {

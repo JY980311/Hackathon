@@ -74,7 +74,7 @@ class AuthViewModel: ViewModel() {
 
                 UserInfo.accessToken = authResponse.accessToken ?: ""
                 UserInfo.userEmail = authResponse.user?.email ?: ""
-                UserInfo.userId = authResponse.user?.id ?: ""
+                UserInfo.userId = authResponse.user?.id ?: "" //
 
                 currentUserEmailFlow.emit(UserInfo.userEmail)
                 currentUserIdFlow.emit(UserInfo.userId)
@@ -92,6 +92,10 @@ class AuthViewModel: ViewModel() {
      suspend fun clearInput(){ // suspend를 사용하는 이유는 비동기로 동작하기 때문에 suspend fun을 사용해야 한다.
         emailInputFlow.emit("")
         passwordInputFlow.emit("")
+    }
+
+    fun user_id() {
+        UserInfo.userId = currentUserIdFlow.value
     }
 
     fun clearUserInfo(){
